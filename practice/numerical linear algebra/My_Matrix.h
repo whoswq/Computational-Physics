@@ -72,6 +72,10 @@ class My_Matrix {
   int Conjugate_Gradiant(My_Matrix &x, const My_Matrix &b,
                          const double eps) const;
   My_Matrix Gram_Schmidt_QR(My_Matrix &R);
+  int Householder_QR();
+  My_Matrix Givens_QR(My_Matrix &R);
 };
+int Householder(double *x, double *v, const int n, double beta);
+int Givens(double alpha, double beta, double c, double s, double eta);
 // namespace My_Matrix
 #endif

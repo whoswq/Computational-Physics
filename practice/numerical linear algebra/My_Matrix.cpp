@@ -603,16 +603,15 @@ My_Matrix My_Matrix::Gram_Schmidt_QR(My_Matrix &R) {
   My_Matrix Q(this->row_number, this->col_number);
   if (R.n_col() != R.n_row() or this->col_number != R.n_col()) {
     throw "My_Matrix, Error in Gram_Schmidt_QR, do not have proper dimension";
-    return -1;
   }
   for (int i = 0; i < this->col_number; i++) {
     for (int j = 0; j < this->row_number; j++) {
       Q.set_element(j, i, this->read_element(j, i));
     }
-    for (int j = 0; j < i - 1) {
+    for (int j = 0; j < i - 1; j++) {
       double var = 0;
       for (int k = 0; k < this->row_number; k++) {
-        var += Q.read_element(k, j) * Q.read_element(k.i);
+        var += Q.read_element(k, j) * Q.read_element(k, i);
       }
       R.set_element(j, i, var);
       for (int k = 0; k < this->row_number; k++) {
@@ -626,8 +625,53 @@ My_Matrix My_Matrix::Gram_Schmidt_QR(My_Matrix &R) {
       norm += Q.read_element(k, i) * Q.read_element(k, i);
     }
     R.set_element(i, i, sqrt(norm));
+    if (norm < 1e-12) {
+      return Q;
+    }
+    for (int k = 0; k < this->row_number; k++) {
+      Q.set_element(k, i, Q.read_element(k, i) / R.read_element(i, i));
+    }
+  }
+  return Q;
+}
+
+// this is not from textbook but from numerical linear algebra
+// code in P122 of textbook may be not stable
+int Householder(double *x, double *v, const int n, double beta) {
+  double eta = abs(x[0]);  // the maxium of u
+  for (int i = 0; i < n; i++) {
+    if (eta < abs(x[i])) {
+      eta = abs(x[i]);
+    }
+  }
+  for (int k = 0; k < n; k++) {
+    x[k] = x[k] / eta;
+  }
+  double sigma = 0;
+  for (int k = 1; k < n; k++) {
+    sigma += x[k] * x[k];
+    v[k] = x[k];
+  }
+  if (sigma < 1e-15) {
+    beta = 0;
+  } else {
+    double alpha = sqrt(x[0] * x[0] + sigma);
+    if (x[0] <= 0) {
+      v[0] = x[0] - alpha;
+    } else {
+      v[0] = -sigma / (x[0] + alpha);
+    }
+    beta = 2.0 * v[0] * v[0] / (sigma + v[0]) * (sigma + v[0]);
+    for (int k = 0; k < n; k++) {
+      v[k] = v[k] / v[0];
+    }
   }
 }
+
+int My_Matrix::Householder_QR(){
+  
+}
+
 int main() {
   try {
     My_Matrix A(4, 4);
